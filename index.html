@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trump Saves Cats and Dogs</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+        }
+        canvas {
+            background: #87ceeb;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Resize the canvas to fit the screen
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Character (Trump)
+        let trump = {
+            x: canvas.width / 2,
+            y: canvas.height - 80,
+            width: 50,
+            height: 50,
+            speed: 10,
+            img: new Image()
+        };
+        trump.img.src = 'trump.png'; // Placeholder image for Trump
+
+        // Falling objects (Cats & Dogs)
+        let animals = [];
+        let score = 0;
+        let lives = 3;
+
+        function createAnimal() {
+            const animal = {
+                x: Math.random() * canvas.width,
+                y: 0,
+                speed: Math.random() * 5 + 2,
+                img: new Image(),
+                type: Math.random() > 0.5 ? 'cat' : 'dog'
+            };
+            animal.img.src = animal.type === 'cat' ? 'cat.png' : 'dog.png';
+            animals.push(animal);
+        }
+
+        // Move Trump based on touch input
+        document.addEventListener('touchmove', function (e) {
+            const touchX = e.touches[0].clientX;
+            trump.x = touchX - trump.width / 2;
+        });
+
+        // Game loop
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Trump
+            ctx.drawImage(trump.img, trump.x, trump.y, trump.width, trump.height);
+
+            // Handle falling animals
+            for (let i = 0; i < animals.length; i++) {
+                const animal = animals[i];
+                animal.y += animal.speed;
+
+                // Check for collision with Trump
+                if (animal.y + 50 > trump.y && animal.x > trump.x && animal.x < trump.x + trump.width) {
+                    score++;
+                    animals.splice(i, 1);
+                    i--;
+                    continue;
+                }
+
+                // If the animal reaches the ground
+                if (animal.y > canvas.height) {
+                    lives--;
+                    animals.splice(i, 1);
+                    i--;
+                    if (lives <= 0) {
+                        alert('Game Over! Score: ' + score);
+                        window.location.reload();
+                    }
+                }
+
+                // Draw the animal
+                ctx.drawImage(animal.img, animal.x, animal.y, 50, 50);
+            }
+
+            // Add new animals randomly
+            if (Math.random() < 0.05) {
+                createAnimal();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
